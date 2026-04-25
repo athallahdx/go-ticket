@@ -25,13 +25,13 @@ Proyek ini menggunakan struktur standar *Standard Go Project Layout*. Berikut ad
 Berikut adalah langkah-langkah yang harus dilakukan untuk membangun project ini. Beri tanda centang `[x]` jika task sudah selesai.
 
 ### Tahap 1: Inisiasi Project & Konfigurasi Dasar
-- [ ] Inisialisasi Go Module (`go mod init <nama-module>`).
-- [ ] Install package *Chi router* (`go get -u github.com/go-chi/chi/v5`).
-- [ ] Install driver MySQL (`go get -u github.com/go-sql-driver/mysql`).
-- [ ] Install package untuk JWT (`go get -u github.com/golang-jwt/jwt/v5`).
-- [ ] Install package untuk bcrypt (`go get -u golang.org/x/crypto/bcrypt`).
-- [ ] Install package untuk .env, misalnya godotenv (`go get -u github.com/joho/godotenv`).
-- [ ] Buat file `.env` dan `.env.example` dengan variabel konfigurasi (DB_HOST, DB_USER, DB_PASS, DB_NAME, JWT_SECRET, PORT).
+- [x] Inisialisasi Go Module (`go mod init <nama-module>`).
+- [x] Install package *Chi router* (`go get -u github.com/go-chi/chi/v5`).
+- [x] Install driver MySQL (`go get -u github.com/go-sql-driver/mysql`).
+- [x] Install package untuk JWT (`go get -u github.com/golang-jwt/jwt/v5`).
+- [x] Install package untuk bcrypt (`go get -u golang.org/x/crypto/bcrypt`).
+- [x] Install package untuk .env, misalnya godotenv (`go get -u github.com/joho/godotenv`).
+- [x] Buat file `.env` dan `.env.example` dengan variabel konfigurasi (DB_HOST, DB_USER, DB_PASS, DB_NAME, JWT_SECRET, PORT).
 - [ ] Buat fungsi pembaca konfigurasi (`env`) di dalam `internal/config/config.go`.
 - [ ] Buat inisialisasi koneksi MySQL di `cmd/server/main.go`.
 

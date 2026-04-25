@@ -1,0 +1,14 @@
+Buatkan saya struktur folder project Golang untuk Event Ticket Management System:
+
+Menggunakan
+- standard library Golang
+- chi router
+- database mysql 
+- rest api
+- json web token (JWT)
+- password bcrypt
+- env
+
+Cukup buatkan struktur folder projectnya saja, tidak perlu tulis code/syntax apapun. dari folder yang sudah ada, buatkan issue.md berisi penjelasan struktur folder dan sebagai project planning berisi task list perintah programmer membuat project ini.
+
+
