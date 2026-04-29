@@ -3,11 +3,13 @@ package config
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
 
 type Config struct {
+	BaseURL   string
 	Port      string
 	DBHost    string
 	DBUser    string
@@ -16,18 +18,42 @@ type Config struct {
 	JWTSecret string
 }
 
-func LoadConfig() *Config {
-	err := godotenv.Load()
-	if err != nil {
-		log.Println("Warning: .env file not found, using the environment variable from OS")
+func getEnv(key, defaultValue string) string {
+	val := strings.TrimSpace(os.Getenv(key))
+	if val == "" {
+		return defaultValue
+	}
+	return val
+}
+
+func validate(cfg *Config) {
+	if cfg.JWTSecret == "" {
+		log.Fatal("JWT_SECRET is required")
 	}
 
-	return &Config{
-		Port:      os.Getenv("Port"),
-		DBHost:    os.Getenv("DB_HOST"),
-		DBUser:    os.Getenv("DB_USER"),
-		DBPass:    os.Getenv("DB_PASS"),
-		DBName:    os.Getenv("DB_Name"),
-		JWTSecret: os.Getenv("JWT_SECRET"),
+	if cfg.DBHost == "" || cfg.DBUser == "" || cfg.DBName == "" {
+		log.Fatal("Database configuration is incomplete")
 	}
+}
+
+func LoadConfig() *Config {
+	if os.Getenv("APP_ENV") != "production" {
+		if err := godotenv.Load(); err != nil {
+			log.Println("Warning: .env file not found, using OS environment variables")
+		}
+	}
+
+	cfg := &Config{
+		BaseURL:   getEnv("BASE_URL", "http://localhost:8080"),
+		Port:      getEnv("PORT", "8080"),
+		DBHost:    getEnv("DB_HOST", "localhost"),
+		DBUser:    getEnv("DB_USER", "root"),
+		DBPass:    getEnv("DB_PASS", ""),
+		DBName:    getEnv("DB_NAME", "go_ticket"),
+		JWTSecret: getEnv("JWT_SECRET", ""),
+	}
+
+	validate(cfg)
+
+	return cfg
 }
