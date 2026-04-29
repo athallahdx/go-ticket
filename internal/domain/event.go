@@ -13,7 +13,7 @@ type Event struct {
 	Date        time.Time    `json:"date" db:"date"`
 	CreatedAt   time.Time    `json:"created_at" db:"created_at"`
 	UpdatedAt   time.Time    `json:"updated_at" db:"updated_at"`
-	DeletedAt   time.Time    `json:"deleted_at" db:"deleted_at"`
+	DeletedAt   *time.Time   `json:"deleted_at" db:"deleted_at"`
 }
 
 type EventRepository interface {

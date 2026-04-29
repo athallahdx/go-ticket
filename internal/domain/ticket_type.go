@@ -3,16 +3,16 @@ package domain
 import "time"
 
 type TicketType struct {
-	ID          int64     `json:"id" db:"id"`
-	EventID     int64     `json:"event_id" db:"event_id"`
-	Name        string    `json:"name" db:"name"`
-	Price       float64   `json:"price" db:"price"`
-	Quota       int       `json:"quota" db:"quota"`
-	Sold        int       `json:"sold" db:"sold"`
-	Description string    `json:"description" db:"description"`
-	CreatedAt   time.Time `json:"created_at" db:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at" db:"updated_at"`
-	DeletedAt   time.Time `json:"deleted_at" db:"deleted_at"`
+	ID          int64      `json:"id" db:"id"`
+	EventID     int64      `json:"event_id" db:"event_id"`
+	Name        string     `json:"name" db:"name"`
+	Price       float64    `json:"price" db:"price"`
+	Quota       int        `json:"quota" db:"quota"`
+	Sold        int        `json:"sold" db:"sold"`
+	Description string     `json:"description" db:"description"`
+	CreatedAt   time.Time  `json:"created_at" db:"created_at"`
+	UpdatedAt   time.Time  `json:"updated_at" db:"updated_at"`
+	DeletedAt   *time.Time `json:"deleted_at" db:"deleted_at"`
 }
 
 type TicketTypeRepository interface {

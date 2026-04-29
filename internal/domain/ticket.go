@@ -3,14 +3,14 @@ package domain
 import "time"
 
 type Ticket struct {
-	ID           int64     `json:"id" db:"id"`
-	Code         string    `json:"code" db:"code"`
-	UserID       int64     `json:"user_id" db:"user_id"`
-	TicketTypeID int64     `json:"ticket_type_id" db:"ticket_type_id"`
-	QRCode       string    `json:"qr_code" db:"qr_code"`
-	Status       string    `json:"status" db:"status"`
-	CreatedAt    time.Time `json:"created_at" db:"created_at"`
-	DeletedAt    time.Time `json:"deleted_at" db:"deleted_at"`
+	ID           int64      `json:"id" db:"id"`
+	Code         string     `json:"code" db:"code"`
+	UserID       int64      `json:"user_id" db:"user_id"`
+	TicketTypeID int64      `json:"ticket_type_id" db:"ticket_type_id"`
+	QRCode       string     `json:"qr_code" db:"qr_code"`
+	Status       string     `json:"status" db:"status"`
+	CreatedAt    time.Time  `json:"created_at" db:"created_at"`
+	DeletedAt    *time.Time `json:"deleted_at" db:"deleted_at"`
 }
 
 type TicketRepository interface {
