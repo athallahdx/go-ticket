@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"go-ticket/internal/config"
 	"go-ticket/internal/domain"
 	"go-ticket/internal/dto"
 	"net/http"
@@ -11,10 +12,109 @@ import (
 
 type AuthHandler struct {
 	authService domain.AuthService
+	cfg         *config.Config
 }
 
-func NewAuthHandler(authService domain.AuthService) *AuthHandler {
-	return &AuthHandler{authService: authService}
+func NewAuthHandler(authService domain.AuthService, cfg *config.Config) *AuthHandler {
+	return &AuthHandler{
+		authService: authService,
+		cfg:         cfg,
+	}
+}
+
+func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
+	var req dto.RegisterRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+
+	if req.Email == "" || req.Password == "" {
+		writeError(w, http.StatusBadRequest, "email and password required")
+		return
+	}
+
+	user, err := h.authService.Register(req.Name, req.Email, req.Password)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	writeJSON(w, http.StatusCreated, h.toUserResponse(user))
+}
+
+func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
+	var req dto.LoginRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+
+	token, user, err := h.authService.Login(req.Email, req.Password)
+	if err != nil {
+		writeError(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	if user == nil {
+		writeError(w, http.StatusInternalServerError, "user not found")
+		return
+	}
+
+	res := dto.AuthResponse{
+		Token: token,
+		User:  h.toUserResponse(user),
+	}
+
+	writeJSON(w, http.StatusOK, res)
+}
+
+func (h *AuthHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
+	userID, err := getUserID(r)
+	if err != nil {
+		writeError(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	user, err := h.authService.GetProfile(userID)
+	if err != nil {
+		writeError(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	if user == nil {
+		writeError(w, http.StatusNotFound, "user not found")
+		return
+	}
+
+	writeJSON(w, http.StatusOK, h.toUserResponse(user))
+}
+
+func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
+	userID, err := getUserID(r)
+	if err != nil {
+		writeError(w, http.StatusUnauthorized, err.Error())
+		return
+	}
+
+	var req dto.ChangePasswordRequest
+
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, http.StatusBadRequest, "invalid request")
+		return
+	}
+
+	err = h.authService.ChangePassword(userID, req.OldPassword, req.NewPassword)
+	if err != nil {
+		writeError(w, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]string{
+		"message": "password updated successfully",
+	})
 }
 
 func getUserID(r *http.Request) (int64, error) {
@@ -51,112 +151,23 @@ func writeError(w http.ResponseWriter, status int, message string) {
 	})
 }
 
-func (h *AuthHandler) Register(w http.ResponseWriter, r *http.Request) {
-	var req dto.RegisterRequest
-
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid request")
-		return
+func (h *AuthHandler) buildProfileURL(profile string) string {
+	if profile == "" {
+		return ""
 	}
-
-	if req.Email == "" || req.Password == "" {
-		writeError(w, http.StatusBadRequest, "email and password required")
-		return
-	}
-
-	user, err := h.authService.Register(req.Name, req.Email, req.Password)
-	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	res := dto.UserResponse{
-		ID:    user.ID,
-		Name:  user.Name,
-		Email: user.Email,
-		Role:  user.Role,
-	}
-
-	writeJSON(w, http.StatusCreated, res)
+	return h.cfg.BaseURL + "/uploads/" + profile
 }
 
-func (h *AuthHandler) Login(w http.ResponseWriter, r *http.Request) {
-	var req dto.LoginRequest
-
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid request")
-		return
+func (h *AuthHandler) toUserResponse(user *domain.User) dto.UserResponse {
+	if user == nil {
+		return dto.UserResponse{}
 	}
 
-	token, user, err := h.authService.Login(req.Email, req.Password)
-	if err != nil {
-		writeError(w, http.StatusUnauthorized, err.Error())
-		return
+	return dto.UserResponse{
+		ID:      user.ID,
+		Name:    user.Name,
+		Email:   user.Email,
+		Role:    user.Role,
+		Profile: h.buildProfileURL(user.Profile),
 	}
-
-	user, err = h.authService.GetProfile(user.ID)
-	if err != nil {
-		writeError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	res := dto.AuthResponse{
-		Token: token,
-		User: dto.UserResponse{
-			ID:    user.ID,
-			Name:  user.Name,
-			Email: user.Email,
-			Role:  user.Role,
-		},
-	}
-
-	writeJSON(w, http.StatusOK, res)
-}
-
-func (h *AuthHandler) GetProfile(w http.ResponseWriter, r *http.Request) {
-	userID, err := getUserID(r)
-	if err != nil {
-		writeError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
-
-	user, err := h.authService.GetProfile(userID)
-	if err != nil {
-		writeError(w, http.StatusNotFound, err.Error())
-		return
-	}
-
-	res := dto.UserResponse{
-		ID:    user.ID,
-		Name:  user.Name,
-		Email: user.Email,
-		Role:  user.Role,
-	}
-
-	writeJSON(w, http.StatusOK, res)
-}
-
-func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
-	userID, err := getUserID(r)
-	if err != nil {
-		writeError(w, http.StatusUnauthorized, err.Error())
-		return
-	}
-
-	var req dto.ChangePasswordRequest
-
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		writeError(w, http.StatusBadRequest, "invalid request")
-		return
-	}
-
-	err = h.authService.ChangePassword(userID, req.OldPassword, req.NewPassword)
-	if err != nil {
-		writeError(w, http.StatusBadRequest, err.Error())
-		return
-	}
-
-	writeJSON(w, http.StatusOK, map[string]string{
-		"message": "password updated successfully",
-	})
 }
