@@ -184,6 +184,30 @@ func (r *userRepository) Update(user *domain.User) error {
 	return nil
 }
 
+func (r *userRepository) UpdateRole(id int64, role string) error {
+	query := `
+		UPDATE users
+		SET role = ?, updated_at = NOW()
+		WHERE id = ? AND deleted_at IS NULL
+	`
+
+	result, err := r.db.Exec(query, role, id)
+	if err != nil {
+		return err
+	}
+
+	rows, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rows == 0 {
+		return errors.New("user not found or role unchanged")
+	}
+
+	return nil
+}
+
 func (r *userRepository) Delete(id int64) error {
 	query := `
 		UPDATE users
