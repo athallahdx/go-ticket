@@ -18,6 +18,12 @@ type UpdateUserRequest struct {
 	Role     string `json:"role" binding:"required"`
 }
 
+type UpdateProfileRequest struct {
+	Name    string `json:"name"`
+	Phone   string `json:"phone"`
+	Profile string `json:"profile"`
+}
+
 type UserResponse struct {
 	ID      int64  `json:"id"`
 	Name    string `json:"name"`
