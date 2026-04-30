@@ -4,8 +4,12 @@ import (
 	"database/sql"
 	"fmt"
 	"log"
+	"net/http"
 
 	"go-ticket/internal/config"
+	"go-ticket/internal/handler"
+	"go-ticket/internal/repository"
+	"go-ticket/internal/service"
 
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -29,6 +33,14 @@ func main() {
 		log.Fatalf("Database can't be reached: %v", err)
 	}
 
+	userRepo := repository.NewUserRepository(db)
+	userService := service.NewUserService(userRepo)
+	userHandler := handler.NewUserHandler(userService, cfg)
+
 	fmt.Println("✅ MySQL connected Successfully!")
 	fmt.Printf("✅ Server running on Port %s...\n", cfg.Port)
+
+	router := SetupRouter(userHandler)
+
+	log.Fatal(http.ListenAndServe(":"+cfg.Port, router))
 }
