@@ -1,6 +1,9 @@
 package domain
 
-import "time"
+import (
+	"mime/multipart"
+	"time"
+)
 
 type User struct {
 	ID        int64      `json:"id" db:"id"`
@@ -25,10 +28,15 @@ type UserRepository interface {
 	GetAll(page, limit int) ([]*User, int, error)
 }
 
-type UserService interface {
-	GetAllUsers(page, limit int) ([]*User, int, error) // int = total count
+type AdminUserService interface {
+	GetAllUsers(page, limit int) ([]*User, int, error)
 	GetUserByID(id int64) (*User, error)
 	UpdateUser(user *User) error
 	UpdateRole(id int64, role string) error
 	DeleteUser(id int64) error
+}
+
+type UserService interface {
+	GetProfileByID(id int64) (*User, error)
+	UpdateProfile(id int64, input UpdateProfileInput, fileHeader *multipart.FileHeader) (*User, error)
 }
