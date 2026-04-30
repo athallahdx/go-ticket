@@ -19,8 +19,8 @@ func NewUserRepository(db *sql.DB) *userRepository {
 
 func (r *userRepository) Create(user *domain.User) error {
 	query := `
-		INSERT INTO users (name, email, phone, profile, password, role, created_at, updated_at)
-		VALUES (?, ?, ?, ?, ?, ?, NOW(), NOW())
+		INSERT INTO users (name, email, phone, password, role, created_at, updated_at)
+		VALUES (?, ?, ?, ?, ?, NOW(), NOW())
 	`
 
 	result, err := r.db.Exec(query,
@@ -66,6 +66,9 @@ func (r *userRepository) GetByEmail(email string) (*domain.User, error) {
 	)
 
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, nil
+		}
 		return nil, err
 	}
 
@@ -114,7 +117,7 @@ func (r *userRepository) GetAll(page, limit int) ([]*domain.User, int, error) {
 	}
 
 	query := `
-		SELECT id, name, email, phone, profile, password, role, created_at, updated_at, deleted_at
+		SELECT id, name, email, phone, profile, role, created_at, updated_at, deleted_at
 		FROM users
 		WHERE deleted_at IS NULL
 		ORDER BY created_at DESC
@@ -136,7 +139,6 @@ func (r *userRepository) GetAll(page, limit int) ([]*domain.User, int, error) {
 			&user.Email,
 			&user.Phone,
 			&user.Profile,
-			&user.Password,
 			&user.Role,
 			&user.CreatedAt,
 			&user.UpdatedAt,
