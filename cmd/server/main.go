@@ -35,12 +35,19 @@ func main() {
 
 	userRepo := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepo)
+	authService := service.NewAuthService(userRepo, cfg.JWTSecret)
+
 	userHandler := handler.NewUserHandler(userService, cfg)
+	authHandler := handler.NewAuthHandler(authService, cfg)
 
 	fmt.Println("✅ MySQL connected Successfully!")
 	fmt.Printf("✅ Server running on Port %s...\n", cfg.Port)
 
-	router := SetupRouter(userHandler)
+	router := SetupRouter(
+		userHandler,
+		authHandler,
+		cfg,
+	)
 
 	log.Fatal(http.ListenAndServe(":"+cfg.Port, router))
 }

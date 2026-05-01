@@ -120,6 +120,7 @@ func (h *UserHandler) toUserResponse(user *domain.User) dto.UserResponse {
 		ID:      user.ID,
 		Name:    user.Name,
 		Email:   user.Email,
+		Phone:   user.Phone,
 		Role:    user.Role,
 		Profile: h.buildProfileURL(user.Profile),
 	}

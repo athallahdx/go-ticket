@@ -51,13 +51,14 @@ func (r *userRepository) GetByEmail(email string) (*domain.User, error) {
 		WHERE email = ? AND deleted_at IS NULL
 	`
 
+	var phone, profile sql.NullString
 	user := &domain.User{}
 	err := r.db.QueryRow(query, email).Scan(
 		&user.ID,
 		&user.Name,
 		&user.Email,
-		&user.Phone,
-		&user.Profile,
+		&phone,
+		&profile,
 		&user.Password,
 		&user.Role,
 		&user.CreatedAt,
@@ -72,6 +73,9 @@ func (r *userRepository) GetByEmail(email string) (*domain.User, error) {
 		return nil, err
 	}
 
+	user.Phone = phone.String
+	user.Profile = profile.String
+
 	return user, nil
 
 }
@@ -83,13 +87,14 @@ func (r *userRepository) GetByID(id int64) (*domain.User, error) {
 		WHERE id = ? AND deleted_at IS NULL
 	`
 
+	var phone, profile sql.NullString
 	user := &domain.User{}
 	err := r.db.QueryRow(query, id).Scan(
 		&user.ID,
 		&user.Name,
 		&user.Email,
-		&user.Phone,
-		&user.Profile,
+		&phone,
+		&profile,
 		&user.Password,
 		&user.Role,
 		&user.CreatedAt,
@@ -103,6 +108,9 @@ func (r *userRepository) GetByID(id int64) (*domain.User, error) {
 		}
 		return nil, err
 	}
+
+	user.Phone = phone.String
+	user.Profile = profile.String
 
 	return user, nil
 }
@@ -132,13 +140,14 @@ func (r *userRepository) GetAll(page, limit int) ([]*domain.User, int, error) {
 
 	var users []*domain.User
 	for rows.Next() {
+		var phone, profile sql.NullString
 		user := &domain.User{}
 		err := rows.Scan(
 			&user.ID,
 			&user.Name,
 			&user.Email,
-			&user.Phone,
-			&user.Profile,
+			&phone,
+			&profile,
 			&user.Role,
 			&user.CreatedAt,
 			&user.UpdatedAt,
@@ -147,6 +156,8 @@ func (r *userRepository) GetAll(page, limit int) ([]*domain.User, int, error) {
 		if err != nil {
 			return nil, 0, err
 		}
+		user.Phone = phone.String
+		user.Profile = profile.String
 		users = append(users, user)
 	}
 
@@ -160,13 +171,12 @@ func (r *userRepository) GetAll(page, limit int) ([]*domain.User, int, error) {
 func (r *userRepository) Update(user *domain.User) error {
 	query := `
 		UPDATE users
-		SET name = ?, email = ?, phone = ?, profile = ?, updated_at = NOW()
+		SET name = ?, phone = ?, profile = ?, updated_at = NOW()
 		WHERE id = ? AND deleted_at IS NULL
 	`
 
 	result, err := r.db.Exec(query,
 		user.Name,
-		user.Email,
 		user.Phone,
 		user.Profile,
 		user.ID,

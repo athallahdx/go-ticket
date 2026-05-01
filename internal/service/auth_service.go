@@ -50,11 +50,15 @@ func (s *authService) Login(email, password string) (string, *domain.User, error
 		return "", nil, errors.New("invalid credentials")
 	}
 
+	if user == nil {
+		return "", nil, errors.New("invalid credentials")
+	}
+
 	if !hash.CheckPasswordHash(password, user.Password) {
 		return "", nil, errors.New("invalid credentials")
 	}
 
-	token, err := jwt.GenerateToken(int(user.ID), user.Role, s.jwtSecret)
+	token, err := jwt.GenerateToken(int64(user.ID), user.Role, s.jwtSecret)
 	if err != nil {
 		return "", nil, errors.New("failed to generate token")
 	}

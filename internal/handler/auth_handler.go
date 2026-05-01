@@ -7,7 +7,6 @@ import (
 	"go-ticket/internal/domain"
 	"go-ticket/internal/dto"
 	"net/http"
-	"strconv"
 )
 
 type AuthHandler struct {
@@ -117,20 +116,16 @@ func (h *AuthHandler) ChangePassword(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// handler/auth_handler.go — read as int64 directly, no strconv
 func getUserID(r *http.Request) (int64, error) {
 	val := r.Context().Value("user_id")
 	if val == nil {
 		return 0, errors.New("missing user_id in context")
 	}
 
-	userIDStr, ok := val.(string)
+	userID, ok := val.(int64)
 	if !ok {
 		return 0, errors.New("invalid user_id type")
-	}
-
-	userID, err := strconv.ParseInt(userIDStr, 10, 64)
-	if err != nil {
-		return 0, err
 	}
 
 	return userID, nil
@@ -167,6 +162,7 @@ func (h *AuthHandler) toUserResponse(user *domain.User) dto.UserResponse {
 		ID:      user.ID,
 		Name:    user.Name,
 		Email:   user.Email,
+		Phone:   user.Phone,
 		Role:    user.Role,
 		Profile: h.buildProfileURL(user.Profile),
 	}
